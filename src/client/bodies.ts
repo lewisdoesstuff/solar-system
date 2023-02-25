@@ -1,11 +1,11 @@
 import * as THREE from 'three';
-import { Body } from './celestialBody';
+import { Body, Moon } from './celestialBody';
 
-export const SunScale = 2e-13;
-export const PlanetScale = 2e-12;
-export const MoonScale = 2e-12;
-export const DistanceScale = 2e-5;
-export const AU = 1.5e11 * DistanceScale; // 149597870700 * 10e5
+export const SunScale = 2e-29;
+export const PlanetScale = 2e-30;
+export const MoonScale = 2e-30;
+export const DistanceScale = 1e-2;
+export const AU = 1000 * DistanceScale; // 149597870700 * 10e5
 export const G = 6.67408e-11;
 
 const sunMass = 1.989e30 * SunScale;
@@ -78,9 +78,9 @@ export const Bodies: { [key: string]: Body } = {
         mass: 6.39e23 * PlanetScale,
         density: 3.93,
         position: new THREE.Vector3(1.52366231 * AU, 0, 0),
-        velocity: new THREE.Vector3(0, Math.sqrt((G * sunMass) / (1.52 * AU)), 0),       
+        velocity: new THREE.Vector3(0, Math.sqrt((G * sunMass) / (1.52 * AU)), 0),
         inclination: 5.65,
-        longitudeOfAscendingNode: 49.56, 
+        longitudeOfAscendingNode: 49.56,
         color: {
             orbit: 0xff6666,
             body: 0x993d00,
@@ -336,4 +336,32 @@ export const Bodies: { [key: string]: Body } = {
             },
         ],
     },
+};
+
+export const getBodies = () => {
+    // return string[] of all body.name and moon.name in Bodies
+    const bodies = [];
+    for (const body of Object.values(Bodies)) {
+        bodies.push(body.name);
+        for (const moon of body.moons) {
+            bodies.push(moon.name);
+        }
+    }
+    return bodies;
+};
+
+export const findBody = (name: string): Body | Moon | null => {
+    // return body object from Bodies
+    for (const body of Object.values(Bodies)) {
+        if (body.name === name) {
+            return body;
+        } else {
+            for (const moon of body.moons) {
+                if (moon.name === name) {
+                    return moon;
+                }
+            }
+        }
+    }
+    return null;
 };

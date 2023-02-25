@@ -1,16 +1,14 @@
 import * as THREE from 'three';
 import * as TWEEN from '@tweenjs/tween.js';
 import { controls, camera } from './client';
-import { CelestialBody, Body } from './celestialBody';
+import { CelestialBody, Body, Moon } from './celestialBody';
 import { Bodies } from './bodies';
+import { runtimeConfig } from './runtimeConfig';
 
-const distance = 1e6;
-
-export let following: THREE.Object3D | undefined;
 export let followDistance: number = 0;
 export const getZoom = (body: Body) => {
-    const minZoom = 1e5;
-    const maxZoom = 1e6;
+    const minZoom = 0.1;
+    const maxZoom = 10;
     // Find the object in the Bodies object with the smallest mass
     const minMass = Math.min(...Object.values(Bodies).map((body) => body.mass));
     const maxMass = Math.max(...Object.values(Bodies).map((body) => body.mass));
@@ -19,14 +17,14 @@ export const getZoom = (body: Body) => {
     return zoom;
 };
 
-export const moveCamera = (body: THREE.Object3D) => {
+export const moveCamera = (body: THREE.Object3D | Body | Moon) => {
     console.log('click!');
     //controls.enabled = false;
     console.log(body);
     const position = body.position.clone();
     const camPosition = camera.position.clone();
     const bodyObj = Bodies[body.name];
-    const endPosition = new THREE.Vector3().copy(position).add(new THREE.Vector3(0, 0, bodyObj ? getZoom(bodyObj) : 5e4));
+    const endPosition = new THREE.Vector3().copy(position).add(new THREE.Vector3(0, 0, bodyObj ? getZoom(bodyObj) : 0.1));
 
     new TWEEN.Tween(camPosition)
         .to(endPosition, 1000)
@@ -40,7 +38,7 @@ export const moveCamera = (body: THREE.Object3D) => {
             controls.target.copy(position);
             controls.update()
             camera.lookAt(endPosition);
-            following = body;
+            runtimeConfig.camera.followTarget = body.name;
             followDistance = bodyObj ? getZoom(bodyObj) : 5e4;
 
         })
@@ -48,6 +46,6 @@ export const moveCamera = (body: THREE.Object3D) => {
 };
 
 export const unFollow = () => {
-    following = undefined;
+    runtimeConfig.camera.followTarget = '';
     followDistance = 0;
 };

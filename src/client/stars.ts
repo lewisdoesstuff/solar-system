@@ -9,10 +9,15 @@ export const createStars = () => {
     const colors: number[] = [];
     // create random star positions
     for (let i = 0; i < starCount; i++) {
-        const x = THREE.MathUtils.randFloatSpread(2e20);
-        const y = THREE.MathUtils.randFloatSpread(2e20);
-        const z = THREE.MathUtils.randFloatSpread(2e20);
-        starVertices.push(x, y, z);
+        const x = THREE.MathUtils.randFloatSpread(2e3);
+        const y = THREE.MathUtils.randFloatSpread(2e3);
+        const z = THREE.MathUtils.randFloatSpread(2e3);
+        // push only if star is not too close to the origin
+        if (x * x + y * y + z * z > 1e5) {
+            starVertices.push(x, y , z);
+        }
+
+       // starVertices.push(x, y , z);
 
         const color = new THREE.Color();
         color.setHSL(Math.random(), 0.1, 0.5);
