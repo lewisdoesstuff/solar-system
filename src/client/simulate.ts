@@ -7,7 +7,7 @@ import { CelestialBody, createBodies } from './celestialBody';
 import { Bodies, G } from './bodies';
 import { createStars } from './stars';
 
-export const timeStep = 500;
+export const timeStep = 1000;
 interface Body {
     body: CelestialBody;
     geometry: THREE.Mesh;
