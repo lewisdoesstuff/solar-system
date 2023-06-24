@@ -32,7 +32,6 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     render();
 }
-let printed = false;
 function animate() {
     requestAnimationFrame(animate);
     controls.update();
@@ -45,13 +44,9 @@ function animate() {
 
             controls.target.copy(targetPos);
 
-            const cameraOffset = new THREE.Vector3(0, 0, getZoom(targetBody));
-            const cameraPos = targetPos.add(cameraOffset);
-            if (!printed) {
-                console.log(cameraPos);
-                printed = true;
-            }
-            camera.position.copy(cameraPos);
+            const zoomLevel = getZoom(targetBody);
+            controls.maxDistance = zoomLevel;
+            controls.minDistance = 0;
 
             controls.update();
         }

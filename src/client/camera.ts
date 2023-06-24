@@ -7,11 +7,20 @@ import { runtimeConfig } from './runtimeConfig';
 import { get } from 'http';
 
 export const getZoom = (body: Body) => {
-    const minZoom = 0.5;
-    const maxZoom = 10;
+    const minZoom = 0.25;
+    const maxZoom = 2;
+    if (body.name === 'sun') return 10;
     // Find the object in the Bodies object with the smallest mass
-    const minMass = Math.min(...Object.values(Bodies).map((body) => body.mass));
-    const maxMass = Math.max(...Object.values(Bodies).map((body) => body.mass));
+    const minMass = Math.min(
+        ...Object.values(Bodies)
+            .filter((body) => body.name !== 'sun')
+            .map((body) => body.mass)
+    );
+    const maxMass = Math.max(
+        ...Object.values(Bodies)
+            .filter((body) => body.name !== 'sun')
+            .map((body) => body.mass)
+    );
     const scaleFactor = (maxZoom - minZoom) / (maxMass - minMass);
     const zoom = minZoom + (body.mass - minMass) * scaleFactor;
     return zoom;
@@ -52,4 +61,5 @@ export const moveCamera = (body: THREE.Object3D | Planet | Moon) => {
 
 export const unFollow = () => {
     runtimeConfig.camera.followTarget = '';
+    controls.maxDistance = 10000;
 };
