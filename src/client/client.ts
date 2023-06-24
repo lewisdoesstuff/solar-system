@@ -2,12 +2,13 @@ import * as THREE from 'three';
 import * as TWEEN from '@tweenjs/tween.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { simulate } from './simulate';
-import { moveCamera, unFollow } from './camera';
+import { getZoom, moveCamera, unFollow } from './camera';
 import { createScene } from './sceneSetup';
 import { createGUI } from './gui';
 import { GUI } from 'dat.gui';
 import { runtimeConfig } from './runtimeConfig';
 import { findBody } from './bodies';
+import { Moon, Planet } from './celestialBody';
 
 export const scene = new THREE.Scene();
 
@@ -31,16 +32,27 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     render();
 }
-
+let printed = false;
 function animate() {
     requestAnimationFrame(animate);
     controls.update();
     TWEEN.update();
     if (runtimeConfig.camera.followTarget != '') {
-        const target = scene.getObjectByName(runtimeConfig.camera.followTarget)
+        const target = scene.getObjectByName(runtimeConfig.camera.followTarget);
+        const targetBody = findBody(runtimeConfig.camera.followTarget) as Planet | Moon;
         if (target) {
             const targetPos = target.position.clone();
+
             controls.target.copy(targetPos);
+
+            const cameraOffset = new THREE.Vector3(0, 0, getZoom(targetBody));
+            const cameraPos = targetPos.add(cameraOffset);
+            if (!printed) {
+                console.log(cameraPos);
+                printed = true;
+            }
+            camera.position.copy(cameraPos);
+
             controls.update();
         }
     }
@@ -67,7 +79,7 @@ const clickEvent = (event: MouseEvent) => {
 const rightClickEvent = (event: MouseEvent) => {
     unFollow();
 };
-const gui = createGUI(new GUI({autoPlace: true}));
+export const gui = createGUI(new GUI({ autoPlace: true }));
 
 let bodies = createScene();
 bodies = simulate(bodies);

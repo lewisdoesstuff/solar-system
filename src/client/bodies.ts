@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Body, Moon } from './celestialBody';
+import { Body, Moon, Planet } from './celestialBody';
 
 export const SunScale = 2e-29;
 export const PlanetScale = 2e-30;
@@ -9,7 +9,7 @@ export const AU = 1000 * DistanceScale; // 149597870700 * 10e5
 export const G = 6.67408e-11;
 
 const sunMass = 1.989e30 * SunScale;
-export const Bodies: { [key: string]: Body } = {
+export const Bodies: { [key: string]: Planet } = {
     sun: {
         mass: sunMass,
         density: 1.41,
@@ -350,7 +350,7 @@ export const getBodies = () => {
     return bodies;
 };
 
-export const findBody = (name: string): Body | Moon | null => {
+export const findBody = (name: string): Planet | Moon | null => {
     // return body object from Bodies
     for (const body of Object.values(Bodies)) {
         if (body.name === name) {

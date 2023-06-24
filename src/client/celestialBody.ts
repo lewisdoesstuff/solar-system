@@ -6,16 +6,15 @@ export interface Color {
     body: number;
 }
 
-export interface Moon {
-    mass: number;
-    density: number;
-    position: THREE.Vector3;
-    velocity: THREE.Vector3;
+export interface Moon extends Body {
     inclination?: number;
     longitudeOfAscendingNode?: number;
-    color: Color;
-    name: string;
     moons?: Moon[];
+}
+export interface Planet extends Body {
+    inclination: number;
+    longitudeOfAscendingNode: number;
+    moons: Moon[];
 }
 
 export interface Body {
@@ -23,11 +22,8 @@ export interface Body {
     density: number;
     position: THREE.Vector3;
     velocity: THREE.Vector3;
-    inclination: number;
-    longitudeOfAscendingNode: number;
     color: Color;
     name: string;
-    moons: Moon[];
 }
 
 export class CelestialBody {
@@ -45,7 +41,7 @@ export class CelestialBody {
     type: 'body' | 'moon';
     parent?: CelestialBody;
 
-    constructor(body: Body | Moon, type: 'body' | 'moon' = 'body', parent?: CelestialBody) {
+    constructor(body: Planet | Moon, type: 'body' | 'moon' = 'body', parent?: CelestialBody) {
         this.name = body.name;
         this.position = body.position;
         this.mass = body.mass;
@@ -107,8 +103,6 @@ export class CelestialBody {
         this.velocity = new THREE.Vector3().copy(this.velocity).add(this.acceleration.clone().multiplyScalar(timeStep));
         this.acceleration = new THREE.Vector3(0, 0, 0);
     }
-
-
 }
 
 export const createBodies = () => {

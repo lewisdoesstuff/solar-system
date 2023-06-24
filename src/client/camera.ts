@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 import * as TWEEN from '@tweenjs/tween.js';
-import { controls, camera } from './client';
-import { CelestialBody, Body, Moon } from './celestialBody';
-import { Bodies } from './bodies';
+import { controls, camera, gui } from './client';
+import { CelestialBody, Body, Moon, Planet } from './celestialBody';
+import { Bodies, findBody } from './bodies';
 import { runtimeConfig } from './runtimeConfig';
+import { get } from 'http';
 
-export let followDistance: number = 0;
 export const getZoom = (body: Body) => {
-    const minZoom = 0.1;
+    const minZoom = 0.5;
     const maxZoom = 10;
     // Find the object in the Bodies object with the smallest mass
     const minMass = Math.min(...Object.values(Bodies).map((body) => body.mass));
@@ -17,35 +17,39 @@ export const getZoom = (body: Body) => {
     return zoom;
 };
 
-export const moveCamera = (body: THREE.Object3D | Body | Moon) => {
-    console.log('click!');
+export const moveCamera = (body: THREE.Object3D | Planet | Moon) => {
     //controls.enabled = false;
-    console.log(body);
-    const position = body.position.clone();
+    let position = body.position.clone();
     const camPosition = camera.position.clone();
-    const bodyObj = Bodies[body.name];
-    const endPosition = new THREE.Vector3().copy(position).add(new THREE.Vector3(0, 0, bodyObj ? getZoom(bodyObj) : 0.1));
-
+    const bodyObj = findBody(body.name) as Moon | Planet;
+    const camOffset = new THREE.Vector3(0, 0, getZoom(bodyObj));
+    //let endPosition = new THREE.Vector3().copy(position).add(new THREE.Vector3(0, 0, getZoom(bodyObj)));
+    camera.lookAt(new THREE.Vector3(0, 0, 0));
     new TWEEN.Tween(camPosition)
-        .to(endPosition, 1000)
-        .easing(TWEEN.Easing.Quadratic.InOut)
+        .to(position.clone().add(camOffset), 2000)
+        .dynamic(true)
+        .easing(TWEEN.Easing.Sinusoidal.In)
         .onUpdate(function () {
-            camera.position.copy(camPosition);
-            camera.lookAt(endPosition);
+            position = body.position.clone();
+            const offsetPos = camPosition.clone().add(camOffset);
+            camera.position.copy(offsetPos);
+            controls.target.copy(position);
+            //camera.lookAt(position);
+            controls.update();
         })
         .onComplete(function () {
-            camera.position.copy(endPosition);
+            position = body.position.clone();
+            const offsetPos = camPosition.clone().add(camOffset);
+            camera.position.copy(offsetPos);
             controls.target.copy(position);
-            controls.update()
-            camera.lookAt(endPosition);
+            controls.update();
+            //camera.lookAt(position);
             runtimeConfig.camera.followTarget = body.name;
-            followDistance = bodyObj ? getZoom(bodyObj) : 5e4;
-
         })
         .start();
+    gui.updateDisplay();
 };
 
 export const unFollow = () => {
     runtimeConfig.camera.followTarget = '';
-    followDistance = 0;
 };

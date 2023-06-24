@@ -27,34 +27,35 @@ const updateOrbit = (body: Body, orbit: THREE.Line) => {
 export const simulate = (bodies: { [key: string]: Body }) => {
     // Update positions/velocities due to gravity
     const sun = bodies['sun'];
-    // create list of all bodies and moons
-    const allBodies = Object.values(bodies).reduce((acc, body) => {
-        acc.push(body);
-        if (body.moons) {
-            acc.push(...body.moons);
-        }
-        return acc;
-    }, [] as Body[]);
-    // Calculate gravity between all bodies
-    for (const body of allBodies) {
-        for (const otherBody of allBodies) {
-            if (body.body.name !== otherBody.body.name) {
-                const force = calculateForce(otherBody.body, body.body );
-                body.body.applyForce(force);
-            }
-        }
-    }
-    // Update positions
-    for (const body of allBodies) {
+    for (const name in bodies) {
+        const body = bodies[name];
+        const forceFromSun = calculateForce(sun.body, body.body);
+        body.body.applyForce(forceFromSun);
         body.body.updatePosition(runtimeConfig.simulation.timeStep);
         body.geometry.position.copy(body.body.position);
         const labelContainer = scene.getObjectByName(body.body.name + 'LabelContainer');
         labelContainer?.position.set(body.body.position.x, body.body.position.y, body.body.position.z);
+
         labelContainer?.lookAt(camera.position);
-        if (body.orbit && body.body.parent) {
-            updateOrbit(bodies[body.body.parent.name], body.orbit);
+
+        for (const moon of body.moons || []) {
+            const forceFromPlanet = calculateForce(body.body, moon.body);
+            const forceFromSunToMoon = calculateForce(sun.body, moon.body);
+            const netForce = forceFromPlanet.add(forceFromSunToMoon);
+
+            moon.body.applyForce(netForce);
+            moon.body.updatePosition(runtimeConfig.simulation.timeStep);
+            moon.geometry.position.copy(moon.body.position);
+            const labelContainer = scene.getObjectByName(moon.body.name + 'LabelContainer');
+
+            labelContainer?.position.copy(moon.body.position);
+            labelContainer?.lookAt(camera.position);
+
+            const orbit = scene.getObjectByName(moon.body.name + 'Orbit');
+            updateOrbit(body, orbit as THREE.Line);
         }
     }
 
     return bodies;
 };
+
