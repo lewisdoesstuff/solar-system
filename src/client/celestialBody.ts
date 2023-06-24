@@ -49,7 +49,7 @@ export class CelestialBody {
         this.position = body.position;
         this.acceleration = new THREE.Vector3(0, 0, 0);
         this.color = body.color;
-        this.radius = Math.pow((3 * this.mass) / (4 * Math.PI * this.density), 1 / 3);
+        this.radius = Math.pow((3 * (this.mass / 1e-5) * 1e-29) / (4 * Math.PI * this.density), 1 / 3);
         this.inclination = body.inclination || 0;
         this.longitudeOfAscendingNode = body.longitudeOfAscendingNode || 0;
         this.type = type;
@@ -58,7 +58,6 @@ export class CelestialBody {
             this.velocity = body.velocity;
             this.parent = parent;
         } else {
-            console.log();
             this.inclination = this.inclination * (Math.PI / 180);
 
             const planeNormal = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(1, 0, 0), this.inclination);
@@ -91,17 +90,15 @@ export class CelestialBody {
     }
 
     applyForce(force: THREE.Vector3) {
+        //console.log(`force on ${this.name}: ${force.x}, ${force.y}, ${force.z}`);
         const acceleration = force.divideScalar(this.mass);
         this.acceleration.add(acceleration);
     }
 
     updatePosition(timeStep: number) {
-        this.position = new THREE.Vector3()
-            .copy(this.position)
-            .add(this.velocity.clone().multiplyScalar(timeStep))
-            .add(this.acceleration.clone().multiplyScalar(timeStep ** 2 / 2));
-        this.velocity = new THREE.Vector3().copy(this.velocity).add(this.acceleration.clone().multiplyScalar(timeStep));
-        this.acceleration = new THREE.Vector3(0, 0, 0);
+        this.velocity.add(this.acceleration.multiplyScalar(timeStep));
+        this.position.add(this.velocity.clone().multiplyScalar(timeStep));
+        this.acceleration.set(0, 0, 0);
     }
 }
 

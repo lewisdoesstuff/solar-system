@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import { Body, Moon, Planet } from './celestialBody';
 
-export const SunScale = 2e-29;
-export const PlanetScale = 2e-30;
-export const MoonScale = 2e-30;
+export const SunScale = 1e-5;
+export const PlanetScale = 1e-5;
+export const MoonScale = 1e-5;
 export const DistanceScale = 1e-2;
-export const AU = 1000 * DistanceScale; // 149597870700 * 10e5
-export const G = 6.67408e-11;
+export const AU = 149597870700 * 1e-10; // 1000 * DistanceScale; //
+export const G = (6.6743e-11 * Math.pow(1e-10, 3)) / PlanetScale;
 
 const sunMass = 1.989e30 * SunScale;
 export const Bodies: { [key: string]: Planet } = {
